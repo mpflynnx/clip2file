@@ -1,0 +1,39 @@
+[build-system]
+requires = ["flit_core >=2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "clip2file"
+author = "M P Flynn"
+author-email = "mpflynnx@gmail.com"
+home-page = "https://github.com/mpflynnx/frontpages"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+]
+requires = ['emoji==1.6.1', 'pyperclip==1.8.2']
+
+requires-python=">=3.7"
+description-file="README.md"
+
+[tool.commitizen]
+version = "0.1.0"
+tag_format = "v$version"
+version_files = [
+  "pyproject.toml:version",
+  "src/clip2file/__init__.py"
+]
+
+[tool.flit.scripts]
+clip2file = "clip2file:main"
+
+[tool.flit.sdist]
+include = ["doc/"]
+exclude = [
+    "doc/*.html",
+    "test/",
+    "src/frontpages/*.cscope",
+    "src/frontpages/*cscope.*",
+    "src/frontpages/tags"]
