@@ -1,3 +1,9 @@
+## v0.2.1 (2022-02-07)
+
+### Refactor
+
+- **clip2file.py**: add dictionary for directory lookup (#2)
+
 ## v0.2.0 (2022-01-27)
 
 ### Feat
