@@ -3,7 +3,9 @@
 import argparse
 from datetime import date
 from pathlib import Path
-from typing import NamedTuple, TextIO
+
+#  from typing import NamedTuple, TextIO
+from typing import NamedTuple
 
 import emoji
 import pyperclip
@@ -13,6 +15,14 @@ today = date.today()
 d1 = today.strftime("%Y%m%d")
 
 c = "-"
+
+lookup = {
+    "pashmisc": "/home/live/Downloads/school/2021-2022/pashley-misc",
+    "4mc": "/home/live/Downloads/school/2021-2022/4MC",
+    "ockmisc": "/home/live/Downloads/school/2021-2022/Ocklynge-misc",
+    "owls": "/home/live/Downloads/school/2021-2022/Pashley-Owls-Year-2",
+    "txt": "/home/live/1e_textfiles",
+}
 
 
 class Args(NamedTuple):
@@ -88,7 +98,6 @@ def get_args() -> Args:
 
 # --------------------------------------------------
 def main() -> None:
-    """Make a jazz noise here"""
 
     args = get_args()
     flag_arg = args.list
@@ -96,34 +105,25 @@ def main() -> None:
     pos2_arg = args.positional2
 
     try:
-        if flag_arg == True:
-            print("Options for pos1_arg = 'pashmisc', '4mc', 'ockmisc', 'owls', 'txt'")
+        if flag_arg is True:
+            print(f"Options for first argument are: {list(lookup.keys())}")
             exit()
 
-        if pos1_arg == "pashmisc":
-            save_location = Path("/home/live/Downloads/school/2021-2022/pashley-misc")
-
-        elif pos1_arg == "4mc":
-            save_location = Path("/home/live/Downloads/school/2021-2022/4MC")
-
-        elif pos1_arg == "ockmisc":
-            save_location = Path("/home/live/Downloads/school/2021-2022/Ocklynge-misc")
-
-        elif pos1_arg == "owls":
-            save_location = Path(
-                "/home/live/Downloads/school/2021-2022/Pashley-Stephen-Owls-Year-2"
-            )
-
-        elif pos1_arg == "txt":
-            save_location = Path("/home/live/1e_textfiles")
-
-        elif pos1_arg == None and flag_arg == False:
+        if pos1_arg is None and flag_arg is False:
             raise ValueError("No valid arguments entered, try --help, or -h.")
 
-        if pos2_arg == None and flag_arg == False:
-            raise ValueError("No description entered.")
-        elif not pos2_arg == None:
+        if pos2_arg is None and flag_arg is False:
+            raise ValueError("No description entered!")
+
+        if pos2_arg is not None:
             description = pos2_arg[0:71]
+
+        if pos1_arg in lookup:
+            save_location = Path(lookup.get(pos1_arg))
+        else:
+            raise ValueError(
+                f"Not a valid first positional argument! try one of these: {list(lookup.keys())}"
+            )
 
         f_ext = ".txt"
         filename = d1 + c + to_url_style(description) + f_ext  # build new filename
@@ -143,7 +143,6 @@ def main() -> None:
                 fib.write(content)  # paste contents of clipboard
                 clear_clip()
         else:
-            # clear_clip()  # clear content of clipboard.
             raise ValueError("Looks like a file of that name already exists!")
 
         print("New file created, at....")
