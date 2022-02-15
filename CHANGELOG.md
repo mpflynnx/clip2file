@@ -1,3 +1,9 @@
+## v0.3.0 (2022-02-15)
+
+### Feat
+
+- **clip2file.py**: read dictionary from yaml file (#3)
+
 ## v0.2.1 (2022-02-07)
 
 ### Refactor
