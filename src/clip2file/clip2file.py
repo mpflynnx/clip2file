@@ -3,12 +3,11 @@
 import argparse
 from datetime import date
 from pathlib import Path
-
-#  from typing import NamedTuple, TextIO
 from typing import NamedTuple
 
 import emoji
 import pyperclip
+import yaml
 
 today = date.today()
 
@@ -16,13 +15,9 @@ d1 = today.strftime("%Y%m%d")
 
 c = "-"
 
-lookup = {
-    "pashmisc": "/home/live/Downloads/school/2021-2022/pashley-misc",
-    "4mc": "/home/live/Downloads/school/2021-2022/4MC",
-    "ockmisc": "/home/live/Downloads/school/2021-2022/Ocklynge-misc",
-    "owls": "/home/live/Downloads/school/2021-2022/Pashley-Owls-Year-2",
-    "txt": "/home/live/1e_textfiles",
-}
+yaml_dir_name = "clip2file"
+yaml_filename = ".clip2file.yaml"
+yaml_path = Path.home() / yaml_dir_name / yaml_filename
 
 
 class Args(NamedTuple):
@@ -52,7 +47,7 @@ def to_url_style(text):
         url_txt = url_txt.replace("  ", " ")
         url_txt = url_txt.replace(" ", "-")
         url_txt = url_txt.replace("--", "-")
-        url_txt = url_txt.replace(".", "-")  # mf added to replace '.' with '-'
+        url_txt = url_txt.replace(".", "-") 
     return url_txt.lower().strip()
 
 
@@ -96,6 +91,18 @@ def get_args() -> Args:
     return Args(args.positional1, args.positional2, args.list)
 
 
+def read_dict(path):
+    """
+    Returns dictionary, read from yaml file found at 'path'.
+    """
+    with open(path, mode="r") as stream:
+        try:
+            parsed_yaml = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+    return parsed_yaml
+
+
 # --------------------------------------------------
 def main() -> None:
 
@@ -104,9 +111,11 @@ def main() -> None:
     pos1_arg = args.positional1
     pos2_arg = args.positional2
 
+    parsed_yaml = read_dict(yaml_path)
+
     try:
         if flag_arg is True:
-            print(f"Options for first argument are: {list(lookup.keys())}")
+            print(f"Options for first argument are: {list(parsed_yaml.keys())}")
             exit()
 
         if pos1_arg is None and flag_arg is False:
@@ -118,11 +127,11 @@ def main() -> None:
         if pos2_arg is not None:
             description = pos2_arg[0:71]
 
-        if pos1_arg in lookup:
-            save_location = Path(lookup.get(pos1_arg))
+        if pos1_arg in parsed_yaml:
+            save_location = Path(parsed_yaml[pos1_arg])
         else:
             raise ValueError(
-                f"Not a valid first positional argument! try one of these: {list(lookup.keys())}"
+                f"Not a valid first positional argument! try one of these: {list(parsed_yaml.keys())}"
             )
 
         f_ext = ".txt"
