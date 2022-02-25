@@ -1,3 +1,9 @@
+## v0.4.0 (2022-02-25)
+
+### Feat
+
+- **clip2file.py**: check existence of config file (#5)
+
 ## v0.3.0 (2022-02-15)
 
 ### Feat
