@@ -15,9 +15,9 @@ d1 = today.strftime("%Y%m%d")
 
 c = "-"
 
-yaml_dir_name = "clip2file"
-yaml_filename = ".clip2file.yaml"
-yaml_path = Path.home() / yaml_dir_name / yaml_filename
+config_dir_name = ".config"
+config_filename = ".clip2file.yaml"
+config_path = Path.home() / config_dir_name / config_filename
 
 
 class Args(NamedTuple):
@@ -97,10 +97,25 @@ def read_dict(path):
     """
     with open(path, mode="r") as stream:
         try:
-            parsed_yaml = yaml.safe_load(stream)
+            parsed_config = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
             print(exc)
-    return parsed_yaml
+    return parsed_config
+
+
+def config_check():
+    """
+    Validate the config file.
+    """
+
+    msg = f" \n No config file found at '{config_path}'.\n\n Open a terminal and paste the following.\n\ncat << EOF > {config_path}\ndocuments: {Path.home()}/Documents\nEOF\n"
+
+
+    if not config_path.is_file():
+        print(msg)
+        exit()
+    else:
+        return read_dict(config_path)
 
 
 # --------------------------------------------------
@@ -111,11 +126,11 @@ def main() -> None:
     pos1_arg = args.positional1
     pos2_arg = args.positional2
 
-    parsed_yaml = read_dict(yaml_path)
+    parsed_config = config_check()
 
     try:
         if flag_arg is True:
-            print(f"Options for first argument are: {list(parsed_yaml.keys())}")
+            print(f"Options for first argument are: {list(parsed_config.keys())}")
             exit()
 
         if pos1_arg is None and flag_arg is False:
@@ -127,11 +142,11 @@ def main() -> None:
         if pos2_arg is not None:
             description = pos2_arg[0:71]
 
-        if pos1_arg in parsed_yaml:
-            save_location = Path(parsed_yaml[pos1_arg])
+        if pos1_arg in parsed_config:
+            save_location = Path(parsed_config[pos1_arg])
         else:
             raise ValueError(
-                f"Not a valid first positional argument! try one of these: {list(parsed_yaml.keys())}"
+                f"Not a valid first positional argument! try one of these: {list(parsed_config.keys())}"
             )
 
         f_ext = ".txt"
