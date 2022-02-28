@@ -47,7 +47,7 @@ def to_url_style(text):
         url_txt = url_txt.replace("  ", " ")
         url_txt = url_txt.replace(" ", "-")
         url_txt = url_txt.replace("--", "-")
-        url_txt = url_txt.replace(".", "-") 
+        url_txt = url_txt.replace(".", "-")
     return url_txt.lower().strip()
 
 
@@ -108,8 +108,7 @@ def config_check():
     Validate the config file.
     """
 
-    msg = f" \n No config file found at '{config_path}'.\n\n Open a terminal and paste the following.\n\ncat << EOF > {config_path}\ndocuments: {Path.home()}/Documents\nEOF\n"
-
+    msg = f" \n No config file found at '{config_path}'.\n\n Open a terminal and paste the following.\n\ncat << EOF > {config_path}\nlookup:\n    documents: {Path.home()}/Documents\nEOF\n"
 
     if not config_path.is_file():
         print(msg)
@@ -130,7 +129,9 @@ def main() -> None:
 
     try:
         if flag_arg is True:
-            print(f"Options for first argument are: {list(parsed_config.keys())}")
+            print(
+                f"""Options for first argument are: {list(parsed_config["lookup"].keys())}"""
+            )
             exit()
 
         if pos1_arg is None and flag_arg is False:
@@ -142,11 +143,11 @@ def main() -> None:
         if pos2_arg is not None:
             description = pos2_arg[0:71]
 
-        if pos1_arg in parsed_config:
-            save_location = Path(parsed_config[pos1_arg])
+        if pos1_arg in parsed_config["lookup"]:
+            save_location = Path(parsed_config["lookup"][pos1_arg])
         else:
             raise ValueError(
-                f"Not a valid first positional argument! try one of these: {list(parsed_config.keys())}"
+                f"""Not a valid first positional argument! try one of these: {list(parsed_config["lookup"].keys())}"""
             )
 
         f_ext = ".txt"
