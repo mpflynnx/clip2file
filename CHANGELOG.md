@@ -1,3 +1,9 @@
+## v0.5.0 (2022-02-28)
+
+### Feat
+
+- **clip2file.py**: updates to handling of a new config file layout (#6)
+
 ## v0.4.0 (2022-02-25)
 
 ### Feat
