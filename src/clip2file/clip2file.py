@@ -56,7 +56,30 @@ def clear_clip():
     pyperclip.copy("")
 
 
-# --------------------------------------------------
+def validate(string_path):
+    """
+    Validate a string path.
+    Check for some common mistakes entering file paths on linux.
+    """
+
+    string_path_parts = Path(string_path).parts
+
+    home_parts = Path.home().parts
+
+    if string_path_parts[0] == "/" and not string_path_parts[0:3] == home_parts:
+        return Path.home() / "/".join(string_path_parts[1:])
+    elif (
+        string_path_parts[0:2] == home_parts[1:]
+    ):  # check for duplication of home path no '/'
+        return Path.home() / "/".join(string_path_parts[2:])
+    elif (
+        string_path_parts[0:3] == home_parts
+    ):  # check for duplication of home path with '/'
+        return Path.home() / "/".join(string_path_parts[3:])
+    else:
+        return Path.home() / string_path
+
+
 def get_args() -> Args:
     """Get command-line arguments"""
 
@@ -122,7 +145,7 @@ def main() -> None:
 
     args = get_args()
     flag_arg = args.list
-    pos1_arg = args.positional1
+    raw_pos1_arg = args.positional1
     pos2_arg = args.positional2
 
     parsed_config = config_check()
@@ -134,7 +157,7 @@ def main() -> None:
             )
             exit()
 
-        if pos1_arg is None and flag_arg is False:
+        if raw_pos1_arg is None and flag_arg is False:
             raise ValueError("No valid arguments entered, try --help, or -h.")
 
         if pos2_arg is None and flag_arg is False:
@@ -143,8 +166,10 @@ def main() -> None:
         if pos2_arg is not None:
             description = pos2_arg[0:71]
 
-        if pos1_arg in parsed_config["lookup"]:
-            save_location = Path(parsed_config["lookup"][pos1_arg])
+        pos1_arg = validate(raw_pos1_arg)
+
+        if pos1_arg.name.lower() in parsed_config["lookup"]:
+            save_location = Path(parsed_config["lookup"][pos1_arg.name.lower()])
         else:
             raise ValueError(
                 f"""Not a valid first positional argument! try one of these: {list(parsed_config["lookup"].keys())}"""
