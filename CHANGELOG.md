@@ -1,3 +1,9 @@
+## v0.6.0 (2022-03-01)
+
+### Feat
+
+- **clip2file.py**: validate the first positional argument (#7)
+
 ## v0.5.0 (2022-02-28)
 
 ### Feat
