@@ -1,3 +1,9 @@
+## v0.7.0 (2022-03-09)
+
+### Feat
+
+- **clip3file.py-pyproject.toml**: sanitize filenames to OS Windows (#8)
+
 ## v0.6.0 (2022-03-01)
 
 ### Feat
