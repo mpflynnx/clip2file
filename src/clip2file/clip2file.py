@@ -8,7 +8,7 @@ from typing import NamedTuple
 import emoji
 import pyperclip
 import yaml
-from pathvalidate import sanitize_filename
+from pathvalidate import ValidationError, sanitize_filename, validate_filepath
 
 today = date.today()
 
@@ -53,11 +53,18 @@ def clear_clip():
     pyperclip.copy("")
 
 
-def validate(string_path):
+def validate_path(string_path):
     """
     Validate a string path.
     Check for some common mistakes entering file paths on linux.
     """
+
+    try:
+        validate_filepath(string_path, platform="windows")
+    except ValidationError as e:
+        print("\n ATTENTION! Input error.")
+        print(f"\n {e}\n", file=sys.stderr)
+        sys.exit(1)
 
     string_path_parts = Path(string_path).parts
 
@@ -163,7 +170,7 @@ def main() -> None:
         if pos2_arg is not None:
             description = sanitize_filename(pos2_arg[0:71], platform="windows")
 
-        pos1_arg = validate(raw_pos1_arg)
+        pos1_arg = validate_path(raw_pos1_arg)
 
         if pos1_arg.name.lower() in parsed_config["lookup"]:
             save_location = Path(parsed_config["lookup"][pos1_arg.name.lower()])
