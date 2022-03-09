@@ -1,3 +1,9 @@
+## v0.8.0 (2022-03-09)
+
+### Feat
+
+- **clip2file.py**: validate the first positional argument to OS Windows (#9)
+
 ## v0.7.0 (2022-03-09)
 
 ### Feat
