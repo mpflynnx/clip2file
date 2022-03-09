@@ -8,6 +8,7 @@ from typing import NamedTuple
 import emoji
 import pyperclip
 import yaml
+from pathvalidate import sanitize_filename
 
 today = date.today()
 
@@ -35,10 +36,7 @@ def to_url_style(text):
     if not text:
         return text
 
-    text = text.strip()
-    url_txt = ""
-    for ch in text:
-        url_txt += ch if ch.isalnum() or ch == "." else " "
+    url_txt = text.strip()
 
     count = -1
     while count != len(url_txt):
@@ -47,7 +45,6 @@ def to_url_style(text):
         url_txt = url_txt.replace("  ", " ")
         url_txt = url_txt.replace(" ", "-")
         url_txt = url_txt.replace("--", "-")
-        url_txt = url_txt.replace(".", "-")
     return url_txt.lower().strip()
 
 
@@ -164,7 +161,7 @@ def main() -> None:
             raise ValueError("No description entered!")
 
         if pos2_arg is not None:
-            description = pos2_arg[0:71]
+            description = sanitize_filename(pos2_arg[0:71], platform="windows")
 
         pos1_arg = validate(raw_pos1_arg)
 
