@@ -16,9 +16,9 @@ clip2file is a Python command line application, which will write text from the c
 
 ## Demo
 
-![Example](./readme_resources/termtosvg_bzl9wjja.svg)
+![Example](./readme_resources/termtosvg_2qre3oc1.svg)
 
-![Example](./readme_resources/termtosvg_nvnljepz.svg)
+![Example](./readme_resources/termtosvg_kea514s2.svg)
 
 
 ## Support
