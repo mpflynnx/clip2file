@@ -1,3 +1,9 @@
+## v0.9.0 (2022-03-11)
+
+### Feat
+
+- automatic config file creation plus more (#10)
+
 ## v0.8.0 (2022-03-09)
 
 ### Feat
