@@ -6,7 +6,6 @@ from datetime import date
 from pathlib import Path
 from typing import NamedTuple
 
-import emoji
 import pyperclip
 import yaml
 from pathvalidate import ValidationError, sanitize_filename, validate_filepath
@@ -28,6 +27,14 @@ class Args(NamedTuple):
     positional1: str
     positional2: str
     list: bool
+
+
+def remove_unicode(s):
+    """Remove from 's' any unicode characters, including emoji."""
+
+    string_encode = s.encode("ascii", "ignore")
+
+    return string_encode.decode()
 
 
 def to_url_style(text):
@@ -294,7 +301,7 @@ def empty_config():
 
 parsed_config = config_check()
 
-# --------------------------------------------------
+
 def main() -> None:
 
     args = get_args()
@@ -328,9 +335,7 @@ def main() -> None:
             raise ValueError("Nothing in clipboard, to paste!")
 
         else:
-            content = emoji.get_emoji_regexp().sub(
-                "", rawcontent
-            )  # strip emoji from rawcontent.
+            content = remove_unicode(rawcontent)  # strip unicode from rawcontent.
 
         if not Path.is_file(destination):  # Check filename doesn't already exist.
             with destination.open(mode="w", encoding="utf-8") as fib:
