@@ -1,3 +1,9 @@
+## v0.9.1 (2022-03-22)
+
+### Fix
+
+- **clip2file.py**: remove unicode characters (#12)
+
 ## v0.9.0 (2022-03-11)
 
 ### Feat
