@@ -144,51 +144,87 @@ def config_check():
     """
 
     if not config_path.is_file():  # not exists
-        print("\n It looks like this is the first run.\n")
-        print(f""" Creating a new config file at "{config_path}".\n""")
+        print("\n It looks like this is the first run.")
+        print(f"""\n Creating a new config file at "{config_path}".""")
         config = empty_config()
         makedir(config_path.parent)
         dumpdict(config, config_path)
         return config
     else:
         check_config = read_config(config_path)
+        config = empty_config()
         if check_config is not None:  # not empty file
             if "lookup" not in check_config.keys():
-                new_config = empty_config()
-                print(
-                    "\n Older config file layout detected, updating config to new layout."
-                )
-                new_config["lookup"].update(check_config)
-                dumpdict(new_config, config_path)
-                return new_config  # when updated
-            return check_config  # when latest
-        return empty_config()  # when empty
+                return update_config1(check_config)  # when updated
+            elif not get_type(config["defaults"]) == get_type(check_config["defaults"]):
+                return update_config2(check_config)  # when updated
+            else:
+                return check_config  # when latest
+        return config  # when empty
+
+
+def get_type(value):
+    """
+    Build current config file structure.
+    """
+    if isinstance(value, dict):
+        return {key: get_type(value[key]) for key in value}
+    else:
+        return str(type(value))
+
+
+def update_config1(check_config):
+    """
+    Updates config file if created by pre clip2file v0.4.0.
+    """
+    new_config = empty_config()
+    print("\n Older config file layout detected, updating config to new layout.")
+    new_config["lookup"].update(check_config)
+    dumpdict(new_config, config_path)
+    return new_config
+
+
+def update_config2(check_config):
+    """
+    Updates config file if created by clip2file v0.9.0
+    """
+    new_config = empty_config()
+    print("\n Older config file layout detected, updating config to new layout.")
+    new_config["defaults"].update(check_config["defaults"])
+    new_config["lookup"].update(check_config["lookup"])
+    dumpdict(new_config, config_path)
+    return new_config
+
+
+def get_key(val):
+    """
+    Return dict key name for 'val'.
+    """
+    for x, new_va in parsed_config["lookup"].items():
+        if val == new_va:
+            return x
+    return
 
 
 def define_save_location(raw_pos1_arg):
     """
     Validate pos1_arg argument then returns a <class 'pathlib.PosixPath'> object for the "save_location".
     """
-    # in work below
-    if raw_pos1_arg in parsed_config["lookup"].keys():  # key present?
-        if not get_path(raw_pos1_arg).is_dir():
-            config_error_01(raw_pos1_arg)
+    if raw_pos1_arg in parsed_config["lookup"].keys():  # True if key present
+        if not get_path(raw_pos1_arg).is_dir():  # true if not a system directory
+            return config_error_01(raw_pos1_arg)  # key name has changed
         return get_path(raw_pos1_arg)
-    else:  # not key, a directory
+    else:  # not key, a directory?
         pos1_arg = validate_path(raw_pos1_arg)
-        key_name = pos1_arg.name.lower()
-        if key_name in parsed_config["lookup"].keys():
-            if parsed_config["lookup"].get(key_name) == str(pos1_arg):
-                if not get_path(key_name).is_dir():
-                    config_error_01(key_name)
-                return get_path(key_name)
-            else:
-                config_error_02(pos1_arg)
-                return get_path(key_name)
-        else:
+        key_name = get_key(str(pos1_arg))  # returns none if no value
+        if key_name is not None:  # check key_name in dict
+            if not get_path(key_name).is_dir():  # true if not a system directory
+                return config_error_01(key_name)
+            return get_path(key_name)
+        else:  # key_name == None
             dir_check(pos1_arg)
             dumpdict(parsed_config, config_path)
-            return get_path(key_name)
+            return Path(pos1_arg)
 
 
 def get_path(key_name):
@@ -202,28 +238,13 @@ def config_error_01(key_name):
     """
     Resolves config file error, when directory path is missing from file system.
     """
-    print("\n ATTENTION! Config file error 01 detected.\n")
+    print("\n ATTENTION! Config file error.")
+
+    value = parsed_config["lookup"].get(key_name)
     dir_check(Path(parsed_config["lookup"].get(key_name)))
-
-
-def config_error_02(key_name):
-    """
-    Resolves config error when file system directory names are duplicated at multiple paths.
-    """
-    print("\n ATTENTION! Config file error 02 detected.")
-    print(
-        f""" "{key_name.name.lower()}" matches "{parsed_config['lookup'].get(key_name.name.lower())}" not "{str(key_name)}"."""
-    )
-    answer = input(" Update config file? [yN]\n")
-    if answer.lower().startswith("y"):
-        print(f"""\n Using directory path "{str(key_name)}".""")
-        parsed_config["lookup"].update(create_dict_entry(key_name))
-        dir_check(key_name)
-        dumpdict(parsed_config, config_path)
-    else:
-        print(
-            f"""\n Using directory path "{parsed_config['lookup'].get(key_name.name.lower())}"."""
-        )
+    dumpdict(parsed_config, config_path)
+    key_name = get_key(value)
+    return get_path(key_name)
 
 
 def dir_check(path):
@@ -232,22 +253,18 @@ def dir_check(path):
     create it if it does not exist. Add to dict 'config:lookup' if it does exist.
     """
 
-    msg1 = f"""\n Directory path "{path}" exists.\n"""
-    msg2 = f""" You can use 'clip2file {path.name.lower()}' next time.\n"""
-
     if path.is_dir():
-        print(msg1)
-        print(msg2)
+        print(f"""\n Directory path "{path}" exists.""")
+        parsed_config["lookup"].update(create_dict_entry(path))
     else:
         if not parsed_config["defaults"]["force-creation-of-new-directories"]:
-            answer = input(
-                f'\n Directory path "{path}" does not exist, create it? " [yN]\n'
-            )
-            if not answer.lower().startswith("y"):
-                sys.exit("\n Bye!\n")
-        makedir(path)
-        print(msg2)
-    parsed_config["lookup"].update(create_dict_entry(path))
+            if yesno(
+                f'Directory path "{path}" does not exist, create it? "', default=True
+            ):
+                makedir(path)
+                parsed_config["lookup"].update(create_dict_entry(path))
+            else:
+                sys.exit("\n Bye!")
 
 
 def dumpdict(dict_name, path):
@@ -256,10 +273,10 @@ def dumpdict(dict_name, path):
     """
     with open(path, mode="w", encoding="utf-8") as file:
         # add comment line in file
-        file.write("# clip2file config file, autogenerated, do not edit.\n")
+        file.write("# clip2file config file, autogenerated, do not edit.")
         file.write("\n")
         yaml.safe_dump(dict_name, file, sort_keys=True, indent=4)
-        print(f""" Config file "{path}" updated!\n""")
+        print(f"""\n Config file "{path}" updated!""")
 
 
 def makedir(dir_path):
@@ -273,20 +290,74 @@ def makedir(dir_path):
             Please delete file "{dir_path}" first or use a different name.
             """
         )
-    print(f""" Directory path "{dir_path}" created!\n""")
+    print(f"""\n Directory path "{dir_path}" created!""")
     Path.mkdir(dir_path, parents=True, exist_ok=True)
 
 
-def create_dict_entry(path):
+def create_dict_entry(path):  # in work
     """
     Creates the dictionary key, value pair
     from 'path' a <class 'pathlib.PosixPath'> object.
     """
 
-    key = path.name.lower()
+    key_name = path.name.lower()  # default key name
     value = str(path.resolve())
 
-    return {key: value}
+    match = parsed_config["lookup"].get(key_name) == value
+
+    # Rename if default key exists and path do not match
+    if key_name in parsed_config["lookup"] and not match:
+        print(f'\n Default lookup name "{key_name}" already exists!')
+        remove_key_from_dict(value)  # remove old key first
+        key_name = create_key_name()
+        return {key_name: value}
+    else:
+        if not parsed_config["defaults"]["use-default-lookup-name"]:  # false
+            if yesno(
+                f'Would you like to change lookup name "{key_name}"?', default=False
+            ):
+                # get old key_name from value then remove first
+                remove_key_from_dict(value)  # remove old key first
+                key_name = create_key_name()
+                return {key_name: value}
+                # remove any keys with matching value
+        remove_key_from_dict(value)  # remove old key first
+        key_name = path.name.lower()  # default key name
+        return {key_name: value}
+
+
+def remove_key_from_dict(value):
+    """
+    Remove key from dictionary containing 'value'.
+    """
+    key_name = get_key(value)
+    parsed_config["lookup"].pop(key_name, None)
+
+
+def create_key_name(
+    prompt: str = "\n Please enter new lookup name, then press enter: ",
+) -> str:
+    while True:
+        key_raw = input(prompt)
+        key_name = to_url_style(sanitize_filename(key_raw, platform="windows").lower())
+        if key_name in parsed_config["lookup"]:
+            print(f' lookup name "{key_name}" already exists!')
+            continue
+        elif key_name == "":
+            print("\n lookup name can't be an empty string!")
+            continue
+        elif yesno(f'Confirm lookup name: "{key_name}"?', default=False):
+            break
+
+    print(f"""\n You can use "clip2file {key_name}" next time.""")
+
+    return key_name
+
+
+def yesno(prompt, default=True):
+    prompt = f"\n {prompt.strip()} {'[Y/n]' if default else '[y/N]'} "
+    response = input(prompt)
+    return {"y": True, "n": False}.get(response.lower().strip(), default)
 
 
 def empty_config():
@@ -295,8 +366,24 @@ def empty_config():
     """
     config = {}
     config["lookup"] = {}
-    config["defaults"] = {"force-creation-of-new-directories": False}
+    config["defaults"] = {
+        "force-creation-of-new-directories": False,
+        "use-default-lookup-name": False,
+    }
     return config
+
+
+def display_lookup():
+    """
+    Display lookup to user.
+    """
+    print(
+        f"""\n Options for first argument are:\n  {list(parsed_config["lookup"].keys())}"""
+    )
+    print("\n Directory lookup:")
+    for key in parsed_config["lookup"].keys():
+        print(f"""  {key} -> {parsed_config["lookup"][key]}""")
+    print("\n")
 
 
 parsed_config = config_check()
@@ -311,9 +398,7 @@ def main() -> None:
 
     try:
         if flag_arg is True:
-            print(
-                f"""Options for first argument are: {list(parsed_config["lookup"].keys())}"""
-            )
+            display_lookup()
             exit()
 
         if raw_pos1_arg is None and flag_arg is False:
@@ -332,7 +417,7 @@ def main() -> None:
         rawcontent = pyperclip.paste()
 
         if rawcontent == "":
-            raise ValueError("Nothing in clipboard, to paste!")
+            raise ValueError("\n Nothing in clipboard, to paste!\n")
 
         else:
             content = remove_unicode(rawcontent)  # strip unicode from rawcontent.
@@ -342,9 +427,9 @@ def main() -> None:
                 fib.write(content)  # paste contents of clipboard
                 clear_clip()
         else:
-            raise ValueError(" Looks like a file of that name already exists!\n")
+            raise ValueError("\n Looks like a file of that name already exists!\n")
 
-        print(" New file created, at....")
+        print("\n New file created, at....")
         print(f" {destination}\n")
 
     except ValueError as e:
