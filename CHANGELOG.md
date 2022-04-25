@@ -1,3 +1,9 @@
+## v0.10.0 (2022-04-25)
+
+### Feat
+
+- **clip2file.py**: adds ability to change default lookup name (#13)
+
 ## v0.9.1 (2022-03-22)
 
 ### Fix
