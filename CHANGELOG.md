@@ -1,3 +1,9 @@
+## v0.11.0 (2022-05-03)
+
+### Feat
+
+- **clip2file.py**: parser: change positional argument 2 to a list (#14)
+
 ## v0.10.0 (2022-04-25)
 
 ### Feat
