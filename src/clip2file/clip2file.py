@@ -109,9 +109,11 @@ def get_args() -> Args:
 
     parser.add_argument(
         "positional2",
-        metavar="str",
-        nargs="?",
-        help="Enter a description of the new files contents in double quotes.",
+        #  type="str",
+        nargs="+",
+        action="append",
+        default=[],
+        help="Enter a description of the new files contents.",
     )
 
     parser.add_argument(
@@ -408,7 +410,8 @@ def main() -> None:
             raise ValueError("No description entered!")
 
         if pos2_arg is not None:
-            description = sanitize_filename(pos2_arg[0:71], platform="windows")
+            raw_description = " ".join(pos2_arg[0])
+            description = sanitize_filename(raw_description[0:71], platform="windows")
 
         f_ext = ".txt"
         filename = d1 + c + to_url_style(description) + f_ext  # build new filename
