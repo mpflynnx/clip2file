@@ -109,7 +109,7 @@ def get_args() -> Args:
 
     parser.add_argument(
         "positional2",
-        nargs="?",
+        nargs="*",
         action="append",
         default=[],
         help="Enter a description of the new files contents.",
