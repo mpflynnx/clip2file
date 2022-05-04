@@ -1,3 +1,9 @@
+## v0.11.1 (2022-05-04)
+
+### Fix
+
+- **clip2file.py**: parser: make positional2 argument optional (#16)
+
 ## v0.11.0 (2022-05-03)
 
 ### Feat
