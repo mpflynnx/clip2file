@@ -1,3 +1,9 @@
+## v0.11.2 (2022-05-04)
+
+### Fix
+
+- **parser**: correct argparse nargs variable for second positional argument (#18)
+
 ## v0.11.1 (2022-05-04)
 
 ### Fix
